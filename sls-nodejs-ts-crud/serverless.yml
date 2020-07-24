@@ -1,0 +1,25 @@
+service: sls-nodejs-ts
+plugins:
+  - serverless-plugin-typescript
+  - serverless-offline
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  apiKeys:
+    - ${self:service}-${self:custom.stage}
+
+custom: 
+  stage: ${opt:stage, 'qa'}
+
+package:
+  exclude:
+    - node_modules/**/*
+  include:
+    handler.ts
+
+functions:
+  getItem: ${file(./functions/getItem/function.yml):getItem}
+
+# resources:
+#   - ${file(./resources.yml)}

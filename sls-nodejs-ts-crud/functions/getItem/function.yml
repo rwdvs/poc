@@ -1,0 +1,32 @@
+getItem:
+  handler: functions/getItem/index.getItem
+  timeout: 30
+  events:
+    - http:
+        path: /getItem/{id}
+        method: GET
+        cors: true
+        private: false
+        #authorizer: aws_iam
+        integration: lambda
+        request:
+          template:
+            application/json: ${file(./functions/getItem/template.tmpl)}
+        response:
+          headers:
+            Content-Type: "'application/json'"
+            x-amzn-LambdaRequestId: "integration.response.body.headers.awsLambdaRequestId" 
+          template: $input.path('$').body
+          statusCodes:
+            500:
+              pattern: '.*"statusCode":500.*' # JSON response
+              template: $util.parseJson($input.path('$.errorMessage')).body # JSON return object
+              headers:
+                Content-Type: "'application/json'"
+                x-amzn-LambdaRequestId: "integration.response.body.errorMessage.headers.awsLambdaRequestId"
+            404:
+              pattern: '.*"statusCode":404.*' # JSON response
+              template: $util.parseJson($input.path('$.errorMessage')).body # JSON return object
+              headers:
+                Content-Type: "'application/json'"
+                x-amzn-LambdaRequestId: "integration.response.body.errorMessage.headers.awsLambdaRequestId"
